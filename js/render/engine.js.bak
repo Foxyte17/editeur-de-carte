@@ -110,37 +110,37 @@ function roundRectStroke(ctx, x, y, w, h, r) {
 
 function drawFaceContent(ctx, face) {
   if (face.imageRaw && face.imageNatural) {
-    const geo = getCropGeometry(face, CARD_W, HALF_H);
-    const img = face._imgCache;
-    if (img && img.complete) {
+  const geo = getCropGeometry(face, CARD_W, HALF_H);
+  const img = face._imgCache;
+  if (img && img.complete) {
+    ctx.save();
+    // --- AJOUT : clip aux marges du cadre doré ---
+    const m = 15, r = 12;
+    ctx.beginPath();
+    ctx.moveTo(m + r, m);
+    ctx.lineTo(CARD_W - m - r, m);
+    ctx.arcTo(CARD_W - m, m, CARD_W - m, m + r, r);
+    ctx.lineTo(CARD_W - m, HALF_H);
+    ctx.lineTo(m, HALF_H);
+    ctx.lineTo(m, m + r);
+    ctx.arcTo(m, m, m + r, m, r);
+    ctx.closePath();
+    ctx.clip();
+    // --- fin ajout ---
+    ctx.filter = `brightness(${face.filters.brightness}%) contrast(${face.filters.contrast}%) saturate(${face.filters.saturation}%)`;
+    if (face.flipH || face.flipV) {
       ctx.save();
-      // --- AJOUT : clip aux marges du cadre doré ---
-      const m = 28, r = 12;
-      ctx.beginPath();
-      ctx.moveTo(m + r, m);
-      ctx.lineTo(CARD_W - m - r, m);
-      ctx.arcTo(CARD_W - m, m, CARD_W - m, m + r, r);
-      ctx.lineTo(CARD_W - m, HALF_H);
-      ctx.lineTo(m, HALF_H);
-      ctx.lineTo(m, m + r);
-      ctx.arcTo(m, m, m + r, m, r);
-      ctx.closePath();
-      ctx.clip();
-      // --- fin ajout ---
-      ctx.filter = `brightness(${face.filters.brightness}%) contrast(${face.filters.contrast}%) saturate(${face.filters.saturation}%)`;
-      if (face.flipH || face.flipV) {
-        ctx.save();
-        if (face.flipH) { ctx.translate(CARD_W, 0); ctx.scale(-1, 1); }
-        if (face.flipV) { ctx.translate(0, HALF_H); ctx.scale(1, -1); }
-        ctx.drawImage(img, geo.x, geo.y, geo.drawW, geo.drawH);
-        ctx.restore();
-      } else {
-        ctx.drawImage(img, geo.x, geo.y, geo.drawW, geo.drawH);
-      }
-      ctx.filter = 'none';
+      if (face.flipH) { ctx.translate(CARD_W, 0); ctx.scale(-1, 1); }
+      if (face.flipV) { ctx.translate(0, HALF_H); ctx.scale(1, -1); }
+      ctx.drawImage(img, geo.x, geo.y, geo.drawW, geo.drawH);
       ctx.restore();
+    } else {
+      ctx.drawImage(img, geo.x, geo.y, geo.drawW, geo.drawH);
     }
+    ctx.filter = 'none';
+    ctx.restore();
   }
+}
 
   const grad = ctx.createLinearGradient(0, HALF_H * 0.62, 0, HALF_H);
   grad.addColorStop(0, 'rgba(20,24,31,0)');
@@ -148,20 +148,39 @@ function drawFaceContent(ctx, face) {
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, CARD_W, HALF_H);
 
-
-
+    // === Layout : type (gauche) / bandeau titre / catégorie overlay (droite) ===
   const bannerH = 50;
-  const bannerY0 = 35;
-  
+  const bannerY0 = 38;
+  const bannerCY = bannerY0 + bannerH / 2;
+
+  // Badge type (4 icones) — gauche, cercle avec fond
+  const leftBadgeR = 35;
+  const leftBadgeCX = 56;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(leftBadgeCX, bannerCY, leftBadgeR + 3, 0, Math.PI * 2);
+  ctx.strokeStyle = 'rgba(230,224,207,0.5)';
+  ctx.lineWidth = 1.6;
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.arc(leftBadgeCX, bannerCY, leftBadgeR, 0, Math.PI * 2);
+  ctx.fillStyle = COLORS.ink;
+  ctx.fill();
+  ctx.strokeStyle = COLORS.brass;
+  ctx.lineWidth = 2.4;
+  ctx.stroke();
+  ctx.strokeStyle = COLORS.parchment;
+  ctx.fillStyle = COLORS.parchment;
+  ctx.lineWidth = 2.4;
+  TYPE_ICONS[face.typeIcon].draw(ctx, leftBadgeCX, bannerCY, leftBadgeR * 0.5);
+  ctx.restore();
+
   // Bandeau titre — du bord gauche jusqu'avant le badge catégorie
   const bannerX0 = 38;
   const bannerX1 = 530;
   const bannerW = bannerX1 - bannerX0;
-  
-  
   ctx.save();
-  // Couleur Fond bandeau titre
-  ctx.fillStyle = 'rgba(20,24,31,1)';
+  ctx.fillStyle = 'rgba(20,24,31,0.9)';
   ctx.fillRect(bannerX0, bannerY0, bannerW, bannerH);
   ctx.strokeStyle = COLORS.brass;
   ctx.lineWidth = 1.5;
@@ -198,6 +217,28 @@ function drawFaceContent(ctx, face) {
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(displayTitle, bannerX0 + bannerW / 2, bannerY0 + bannerH / 2 + 1);
+  ctx.restore();
+  ctx.restore();
+
+  // Badge catégorie (7 icones) — droite, overlay flottant sans cercle
+  ctx.save();
+  ctx.shadowColor = 'rgba(0,0,0,0.65)';
+  ctx.shadowBlur = 5;
+  ctx.strokeStyle = COLORS.parchment;
+  ctx.fillStyle = COLORS.parchment;
+  ctx.lineWidth = 3;
+  CATEGORY_ICONS[face.categoryIcon].draw(ctx, CARD_W - 45, bannerCY, 28);
+  ctx.restore();
+
+  ctx.save();
+  ctx.fillStyle = COLORS.brassBright;
+  ctx.font = '700 30px "Iowan Old Style", "Palatino Linotype", Georgia, serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.shadowBlur = 6;
+  const title = (face.name || 'Sans titre').toUpperCase();
+  ctx.fillText(title, CARD_W / 2, bannerY, CARD_W - 220);
   ctx.restore();
 
   if (face.description && face.description.trim()) {
@@ -239,44 +280,6 @@ function drawFaceContent(ctx, face) {
   }
 }
 
-
-
-
-function drawBadgeContent(ctx, face) {
-
-  /*topPositionBadger = Position haute 
-  leftBadgeRadius = taille du badge !  
-  const leftBadgeCX = postiion gauche*/
-  const topPositionBadger = 47;
-  const leftBadgeRadius = 30;
-  const leftBadgeCX = 47;
-  
-  // =========== BAGDE ===============
-  ctx.save();
-  ctx.beginPath();
-  ctx.arc(leftBadgeCX, topPositionBadger, leftBadgeRadius + 3, 0, Math.PI * 2);
-  //premier Contour badge
-  ctx.strokeStyle = 'rgba(230,224,207,0.5)';
-  ctx.lineWidth = 1.6;
-  ctx.stroke();
-  ctx.beginPath();
-  ctx.arc(leftBadgeCX, topPositionBadger, leftBadgeRadius, 0, Math.PI * 2);
-  // Fond couleur badge
-  ctx.fillStyle = 'rgba(20,24,31,1)';
-  ctx.fill();
-  ctx.strokeStyle = COLORS.brass;
-  ctx.lineWidth = 2.4;
-  ctx.stroke();
-  ctx.strokeStyle = COLORS.parchment;
-  ctx.fillStyle = COLORS.parchment;
-  ctx.lineWidth = 2.4;
-  TYPE_ICONS[face.typeIcon].draw(ctx, leftBadgeCX, topPositionBadger, leftBadgeRadius * 0.5);
-  ctx.restore();
-}
-
-
-
-
 function preloadFaceImage(face, then) {
   if (!face.imageRaw) { then(); return; }
   if (face._imgCache && face._imgCache.src === face.imageRaw && face._imgCache.complete) { then(); return; }
@@ -291,10 +294,6 @@ function preloadFaceImage(face, then) {
 
 function drawHalf(ctx, face) {
   drawFaceContent(ctx, face);
-}
-
-function drawBadge(ctx, face) {
-  drawBadgeContent(ctx, face);
 }
 
 function drawCard(canvas, card) {
@@ -313,14 +312,6 @@ function drawCard(canvas, card) {
   ctx.restore();
 
   drawOrnaments(ctx);
-
-  drawBadge(ctx, card.top);
-  ctx.save();
-  ctx.translate(CARD_W, CARD_H);
-  ctx.rotate(Math.PI);
-
-  drawBadge(ctx, card.bottom);
-
 }
 
 function renderPreview() {
