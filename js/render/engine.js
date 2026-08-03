@@ -242,26 +242,24 @@ function drawFaceContent(ctx, face) {
 
 
 
-
 function drawBadgeContent(ctx, face) {
 
-  /*topPositionBadger = Position haute 
-  leftBadgeRadius = taille du badge !  
-  const leftBadgeCX = postiion gauche*/
-  const topPositionBadger = 47;
-  const leftBadgeRadius = 30;
-  const leftBadgeCX = 47;
+  /*
+  TypeBadgeCY : Vertical === TypeBadgeCX : Horizontal === TypeBadgeRadius : Taille du badge  */
+  const TypeBadgeCY = 58;
+  const TypeBadgeCX = 58;
+  const TypeBadgeRadius = 43;
   
-  // =========== BAGDE ===============
+  // =========== BAGDE TYPE (GAUCHE)===============
   ctx.save();
   ctx.beginPath();
-  ctx.arc(leftBadgeCX, topPositionBadger, leftBadgeRadius + 3, 0, Math.PI * 2);
-  //premier Contour badge
-  ctx.strokeStyle = 'rgba(230,224,207,0.5)';
+  ctx.arc(TypeBadgeCX, TypeBadgeCY, TypeBadgeRadius + 3, 0, Math.PI * 2);
+  // Premier Contour badge
+  ctx.strokeStyle = 'rgba(230, 224, 207, 0.2)';
   ctx.lineWidth = 1.6;
   ctx.stroke();
   ctx.beginPath();
-  ctx.arc(leftBadgeCX, topPositionBadger, leftBadgeRadius, 0, Math.PI * 2);
+  ctx.arc(TypeBadgeCX, TypeBadgeCY, TypeBadgeRadius, 0, Math.PI * 2);
   // Fond couleur badge
   ctx.fillStyle = 'rgba(20,24,31,1)';
   ctx.fill();
@@ -271,22 +269,35 @@ function drawBadgeContent(ctx, face) {
   ctx.strokeStyle = COLORS.parchment;
   ctx.fillStyle = COLORS.parchment;
   ctx.lineWidth = 2.4;
-  TYPE_ICONS[face.typeIcon].draw(ctx, leftBadgeCX, topPositionBadger, leftBadgeRadius * 0.5);
+  const typeIcon = TYPE_ICONS[face.typeIcon] || TYPE_ICONS.event;
+  typeIcon.draw(ctx, TypeBadgeCX, TypeBadgeCY, TypeBadgeRadius * 0.5);
   ctx.restore();
 
-  // =========== ICONE CATEGORIE (flottante, sans cercle, superposée) ===============
-  // Alignée sur la même hauteur que le badge type (topPositionBadger).
-  // Rayon proportionné comme le badge type (rayon de base * 0.5), pour une taille visuelle cohérente.
-  const catIconCX = CARD_W - 45;
-  const catIconRadius = 30;
+  // =========== BADGE CATEGORIE (DROITE)===============
+  // CatBadgeCX : horizontal === CatBadgeCY : vertical === CatBadgeRadius : taille
+  // L'asymétrie entre ce badge et le badge type est voulue.
+  const CatBadgeCX = 590;
+  const CatBadgeCY = 65;
+  const CatBadgeRadius = 30;
 
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,0.65)';
   ctx.shadowBlur = 5;
+  // Plaque de fond (encre + liseré laiton) : place l'icône au premier plan, devant les dorures
+  ctx.beginPath();
+  ctx.arc(CatBadgeCX, CatBadgeCY, CatBadgeRadius * 0.74, 0, Math.PI * 2);
+  ctx.fillStyle = COLORS.ink;
+  ctx.fill();
+  ctx.strokeStyle = COLORS.brass;
+  ctx.globalAlpha = 0.55;
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
+  ctx.globalAlpha = 1;
   ctx.strokeStyle = COLORS.parchment;
   ctx.fillStyle = COLORS.parchment;
   ctx.lineWidth = 3;
-  CATEGORY_ICONS[face.categoryIcon].draw(ctx, catIconCX, topPositionBadger, catIconRadius * 0.5);
+  const catIcon = CATEGORY_ICONS[face.categoryIcon] || CATEGORY_ICONS.npc;
+  catIcon.draw(ctx, CatBadgeCX, CatBadgeCY, CatBadgeRadius * 0.65);
   ctx.restore();
 }
 

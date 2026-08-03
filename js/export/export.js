@@ -1,3 +1,10 @@
+function normalizeFace(face) {
+  if (CATEGORY_ICON_ALIASES[face.categoryIcon]) face.categoryIcon = CATEGORY_ICON_ALIASES[face.categoryIcon];
+  if (!CATEGORY_ICONS[face.categoryIcon]) face.categoryIcon = 'npc';
+  if (!TYPE_ICONS[face.typeIcon]) face.typeIcon = 'event';
+  return face;
+}
+
 function exportCardPng() {
   const card = activeCard();
   if (!card) { showStatus('Aucune carte sélectionnée.'); return; }
@@ -128,8 +135,8 @@ function loadProjectJson(event) {
       (data.cards || []).forEach(c => {
         const card = newCard();
         card.id = c.id || card.id;
-        card.top = Object.assign(newFace(), c.top || {});
-        card.bottom = Object.assign(newFace(), c.bottom || {});
+        card.top = normalizeFace(Object.assign(newFace(), c.top || {}));
+        card.bottom = normalizeFace(Object.assign(newFace(), c.bottom || {}));
         deck.cards.push(card);
       });
       decks.push(deck);
