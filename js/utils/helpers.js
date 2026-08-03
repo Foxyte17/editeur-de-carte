@@ -35,8 +35,8 @@ function iconToSvg(iconDef) {
   const c = document.createElement('canvas');
   c.width = 40; c.height = 40;
   const ctx = c.getContext('2d');
-  ctx.strokeStyle = COLORS.brass;
-  ctx.fillStyle = COLORS.brass;
+  ctx.strokeStyle = COLORS.parchment;
+  ctx.fillStyle = COLORS.parchment;
   ctx.lineWidth = 2;
   ctx.lineCap = 'round';
   ctx.lineJoin = 'round';

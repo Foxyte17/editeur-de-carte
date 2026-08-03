@@ -3,7 +3,7 @@ function newFace() {
     name: '',
     description: '',
     typeIcon: 'event',
-    categoryIcon: 'pnj',
+    categoryIcon: 'npc',
     textPosition: 'right',
     imageRaw: null,
     imageNatural: null,
