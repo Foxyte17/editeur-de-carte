@@ -1,0 +1,81 @@
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+.btn {
+  background: var(--brass);
+  color: var(--ink);
+  border: none;
+  padding: 8px 14px;
+  border-radius: 5px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.btn:hover { background: var(--brass-bright); }
+.btn.ghost {
+  background: transparent;
+  color: var(--brass);
+  border: 1px solid var(--brass);
+}
+.btn.ghost:hover { color: var(--brass-bright); border-color: var(--brass-bright); }
+.btn.ghost.active {
+  background: var(--brass);
+  color: var(--ink);
+  border-color: var(--brass);
+}
+.btn.small { padding: 5px 10px; font-size: 0.78rem; }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.panel {
+  padding: 16px;
+  border-right: 1px solid var(--panel-line);
+  overflow-y: auto;
+}
+.panel:last-child { border-right: none; }
+.panel h2 {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--brass);
+  margin: 18px 0 8px;
+  border-bottom: 1px solid var(--panel-line);
+  padding-bottom: 6px;
+}
+.panel h2:first-child { margin-top: 0; }
+
+select, input[type=text], textarea, input[type=url] {
+  width: 100%;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  color: var(--parchment);
+  border-radius: 4px;
+  padding: 7px 9px;
+  font-family: inherit;
+  font-size: 0.88rem;
+}
+textarea { resize: vertical; min-height: 70px; }
+label { display: block; font-size: 0.78rem; color: var(--parchment-dim); margin: 10px 0 4px; }
+
+.deck-row { display: flex; gap: 6px; }
+.deck-row select { flex: 1; }
+
+.card-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 4px;
+  padding: 7px 9px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  font-size: 0.82rem;
+}
+.card-list-item.active { border-color: var(--brass); color: var(--brass-bright); }
+.card-list-item .del { color: var(--danger); background: transparent; border: none; font-size: 0.75rem; }
+
+input[type=range] { width: 100%; }
+
+.legend { font-size: 0.74rem; color: var(--parchment-dim); text-align: center; max-width: 320px; }
+.status-msg { font-size: 0.76rem; color: var(--brass-bright); min-height: 1em; text-align: center; }

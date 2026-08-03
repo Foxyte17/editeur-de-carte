@@ -1,0 +1,45 @@
+function activeDeck() { return decks.find(d => d.id === activeDeckId); }
+function activeCard() { const deck = activeDeck(); return deck ? deck.cards.find(c => c.id === activeCardId) : null; }
+function activeFace() { const card = activeCard(); return card ? card[activeFaceKey] : null; }
+
+function showStatus(msg) {
+  document.getElementById('status-msg').textContent = msg;
+  clearTimeout(showStatus._t);
+  showStatus._t = setTimeout(() => { document.getElementById('status-msg').textContent = ''; }, 2200);
+}
+
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
+}
+
+function wrapText(ctx, text, maxWidth) {
+  const words = text.split(/\s+/).filter(Boolean);
+  const lines = [];
+  let current = '';
+  words.forEach(word => {
+    const test = current ? current + ' ' + word : word;
+    if (ctx.measureText(test).width > maxWidth && current) {
+      lines.push(current);
+      current = word;
+    } else {
+      current = test;
+    }
+  });
+  if (current) lines.push(current);
+  return lines;
+}
+
+function iconToSvg(iconDef) {
+  const c = document.createElement('canvas');
+  c.width = 40; c.height = 40;
+  const ctx = c.getContext('2d');
+  ctx.strokeStyle = COLORS.brass;
+  ctx.fillStyle = COLORS.brass;
+  ctx.lineWidth = 2;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  iconDef.draw(ctx, 20, 20, 15);
+  return `<img src="${c.toDataURL()}" style="width:20px;height:20px;">`;
+}
