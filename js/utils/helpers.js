@@ -2,6 +2,8 @@ function activeDeck() { return decks.find(d => d.id === activeDeckId); }
 function activeCard() { const deck = activeDeck(); return deck ? deck.cards.find(c => c.id === activeCardId) : null; }
 function activeFace() { const card = activeCard(); return card ? card[activeFaceKey] : null; }
 
+function sanitizeDeckName(name) { return (name || '').replace(/[^a-z0-9]+/gi, '_').replace(/^_+|_+$/g, ''); }
+
 function preloadFaceImage(face, then) {
   if (!face.imageRaw) { then(face); return; }
   if (face._imgCache && face._imgCache.src === face.imageRaw && face._imgCache.complete) { then(face); return; }

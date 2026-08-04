@@ -20,7 +20,7 @@ function addNewCard() {
   renderDeckSelect();
   loadCard(card.id);
   resetPreviewFlip();
-  showStatus('Nouvelle carte créée — pense à "Enregistrer" après édition.');
+  showStatus('Nouvelle carte créée et sélectionnée.');
 }
 
 function loadCard(id) {
@@ -38,14 +38,4 @@ function deleteCard(id) {
   renderCardList();
   loadFaceIntoForm();
   renderPreview();
-}
-
-function saveCardIntoDeck() {
-  if (!activeCard()) {
-    addNewCard();
-    return;
-  }
-  renderDeckSelect();
-  renderCardList();
-  showStatus('Carte enregistrée dans le deck.');
 }

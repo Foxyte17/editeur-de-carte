@@ -386,3 +386,19 @@ function togglePreviewFlip() {
   const btn = document.getElementById('btn-flip-preview');
   if (btn) btn.classList.toggle('active', previewFlipped);
 }
+
+function setPreviewZoom(value) {
+  previewZoom = Math.min(120, Math.max(25, Number(value)));
+  const canvas = document.getElementById('preview-canvas');
+  if (canvas) canvas.style.zoom = previewZoom / 100;
+  const col = document.querySelector('.preview-col');
+  if (col) col.classList.toggle('zoomed', previewZoom > 100);
+  const label = document.getElementById('preview-zoom-value');
+  if (label) label.textContent = previewZoom + '%';
+}
+
+function resetPreviewZoom() {
+  const slider = document.getElementById('preview-zoom-range');
+  if (slider) slider.value = 100;
+  setPreviewZoom(100);
+}

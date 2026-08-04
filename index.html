@@ -12,15 +12,13 @@
 
 <header>
   <h1>Éditeur de cartes — Oracle Roll</h1>
-<div class="toolbar">
-    <button class="btn ghost small" onclick="exportDeckJson()">Exporter le deck (JSON)</button>
+  <div class="toolbar">
     <button class="btn ghost small" onclick="saveProjectJson()">Sauvegarder le projet</button>
     <label class="btn ghost small" style="margin:0;">
       Charger un projet
       <input type="file" accept="application/json" style="display:none;" onchange="loadProjectJson(event)">
     </label>
     <button class="btn small" onclick="exportCardPng()">Télécharger la carte (PNG)</button>
-    <button class="btn small" onclick="exportDeckPngs()">Télécharger le deck (PNG)</button>
   </div>
 </header>
 
@@ -36,6 +34,22 @@
     <label>Nom du deck</label>
     <input type="text" id="deck-name" oninput="renameDeck(this.value)">
 
+    <label>Dossier JSON</label>
+    <div class="folder-row">
+      <button id="json-folder-pick" class="btn ghost small" onclick="pickJsonFolder()">Choisir un dossier</button>
+      <span id="json-folder-name" class="folder-name"></span>
+      <button class="icon-btn" title="Exporter le deck (JSON)" aria-label="Exporter le deck (JSON)" onclick="exportDeckJson()">⬇</button>
+    </div>
+    <input type="text" id="json-folder-fallback" class="folder-fallback" style="display:none;" oninput="setDeckJsonFolder(this.value)">
+
+    <label>Dossier des images (PNG)</label>
+    <div class="folder-row">
+      <button id="image-folder-pick" class="btn ghost small" onclick="pickImageFolder()">Choisir un dossier</button>
+      <span id="image-folder-name" class="folder-name"></span>
+      <button class="icon-btn" title="Télécharger le deck (PNG)" aria-label="Télécharger le deck (PNG)" onclick="exportDeckPngs()">⬇</button>
+    </div>
+    <input type="text" id="image-folder-fallback" class="folder-fallback" style="display:none;" oninput="setDeckImageFolder(this.value)">
+
     <h2>Cartes du deck</h2>
     <div id="card-list"></div>
     <button class="btn ghost small" style="width:100%; margin-top:6px;" onclick="addNewCard()">+ Nouvelle carte</button>
@@ -44,13 +58,17 @@
   <!-- ============ PANNEAU CENTRE : APERÇU ============ -->
   <div class="panel">
     <div class="preview-wrap">
-      <canvas id="preview-canvas" width="660" height="1140"></canvas>
-      <div class="toolbar">
-        <button id="btn-flip-preview" class="btn ghost small" onclick="togglePreviewFlip()">↻ Pivoter l'aperçu</button>
-        <button class="btn small" onclick="saveCardIntoDeck()">Enregistrer la carte dans le deck</button>
+      <div class="zoom-rail">
+        <button class="zoom-reset" title="Remettre le zoom à 100%" aria-label="Remettre le zoom à 100%" onclick="resetPreviewZoom()">↺</button>
+        <input type="range" id="preview-zoom-range" min="25" max="120" value="100" oninput="setPreviewZoom(this.value)">
+        <span id="preview-zoom-value">100%</span>
+        <button id="btn-flip-preview" class="btn ghost small" onclick="togglePreviewFlip()">↻ Pivoter</button>
       </div>
-      <div class="status-msg" id="status-msg"></div>
-      <div class="legend">Aperçu à l'échelle d'export réelle (660 × 1140 px). L'image finale exportée sera identique à ce que tu vois ici.</div>
+      <div class="preview-col">
+        <canvas id="preview-canvas" width="660" height="1140"></canvas>
+        <div class="status-msg" id="status-msg"></div>
+        <div class="legend">Aperçu zoomable - le zoom est purement visuel, l'export reste en 660 × 1140 px.</div>
+      </div>
     </div>
   </div>
 

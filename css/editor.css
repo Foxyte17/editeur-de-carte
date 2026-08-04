@@ -56,10 +56,70 @@
 
 .preview-wrap {
   display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 12px;
+  padding: 20px;
+}
+.preview-col {
+  display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px;
   gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+.preview-col.zoomed { align-items: flex-start; }
+
+.zoom-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  width: 72px;
+  padding: 10px 6px;
+  background: var(--panel);
+  border: 1px solid var(--panel-line);
+  border-radius: 8px;
+}
+.zoom-rail input[type=range] {
+  writing-mode: vertical-lr;
+  direction: rtl;
+  appearance: slider-vertical;
+  -webkit-appearance: slider-vertical;
+  accent-color: var(--brass);
+  width: 30px;
+  height: 150px;
+  margin: 0;
+}
+.zoom-reset {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid var(--brass);
+  color: var(--brass);
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  padding: 0;
+}
+.zoom-reset:hover { background: rgba(193,154,73,0.15); color: var(--brass-bright); }
+#preview-zoom-value {
+  font-size: 0.7rem;
+  color: var(--parchment-dim);
+  white-space: nowrap;
+}
+.zoom-rail #btn-flip-preview {
+  width: 100%;
+  margin: 0;
+  padding: 5px 2px;
+  font-size: 0.7rem;
+  white-space: nowrap;
 }
 #preview-canvas {
   max-width: 100%;
@@ -68,3 +128,38 @@
   transition: transform 0.4s ease;
 }
 #preview-canvas.flipped { transform: rotate(180deg); }
+
+.folder-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.folder-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  color: var(--parchment-dim);
+}
+.folder-fallback {
+  width: 100%;
+  box-sizing: border-box;
+}
+.icon-btn {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+  border: 1px solid var(--brass);
+  color: var(--brass-bright);
+  border-radius: 5px;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.icon-btn:hover { background: rgba(193,154,73,0.15); }
