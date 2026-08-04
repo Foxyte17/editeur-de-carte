@@ -73,15 +73,21 @@ const TYPE_ICONS = {
   event: _normalizeIcon({
     label: 'Événement',
     draw(ctx, cx, cy, r) {
+      // Chaque icône a un bloc qui se termine par }, <un nombre>), - c'est toujours ce nombre-là qui contrôle sa taille.
+      // Épaisseur et taille du "!" pilotées ici : lineWidth propre (au lieu d'hériter
+      // du lineWidth fixe posé par le badge) + facteur de normalisation dédié (0.68
+      // au lieu de 0.6 partagé) pour que le symbole occupe davantage le badge.
+      ctx.lineCap = 'round';
+      ctx.lineWidth = r * 0.17;
       ctx.beginPath();
-      ctx.moveTo(cx, cy - r * 0.6);
-      ctx.lineTo(cx, cy + r * 0.15);
+      ctx.moveTo(cx, cy - r * 0.62);
+      ctx.lineTo(cx, cy + r * 0.14);
       ctx.stroke();
       ctx.beginPath();
-      ctx.arc(cx, cy + r * 0.55, r * 0.09, 0, Math.PI * 2);
+      ctx.arc(cx, cy + r * 0.52, r * 0.115, 0, Math.PI * 2);
       ctx.fill();
     }
-  }, 0.6),
+  }, 0.90),
   quest: _normalizeIcon({
     label: 'Quête',
     draw(ctx, cx, cy, r) {
@@ -96,7 +102,7 @@ const TYPE_ICONS = {
       ctx.arc(cx, cy + r * 0.55, r * 0.09, 0, Math.PI * 2);
       ctx.fill();
     }
-  }, 0.6),
+  }, 0.90),
   danger: _normalizeIcon({
     label: 'Danger',
     draw(ctx, cx, cy, r) {
@@ -126,7 +132,7 @@ const TYPE_ICONS = {
       ctx.arc(cx, cy + r * 0.15, r * 0.07, 0, Math.PI * 2);
       ctx.fill();
     }
-  }, 0.6),
+  }, 0.90),
   unexpected: _normalizeIcon({
     label: 'Inattendu',
     draw(ctx, cx, cy, r) {
@@ -140,7 +146,7 @@ const TYPE_ICONS = {
       ctx.closePath();
       ctx.stroke();
     }
-  }, 0.6)
+  }, 0.90)
 };
 
 const CATEGORY_ICONS = {
@@ -157,6 +163,16 @@ const CATEGORY_ICONS = {
       ctx.stroke();
     }
   }, 0.6),
+  // ============================================================================
+  // BLOC SVG CONVERTI — NE PAS MODIFIER À LA MAIN
+  // Les icônes ci-dessous (monster, weapon, relic) sont générées automatiquement
+  // depuis des fichiers .svg sources, pas dessinées ligne par ligne comme le
+  // reste du fichier. Les coordonnées sont "cuites" (baked) : les retoucher ici
+  // à la main désynchronise le code du dessin source et casse la géométrie.
+  // Pour changer un dessin : modifier/remplacer le .svg source correspondant,
+  // puis relancer la conversion (voir documentation/ pour les .svg sources :
+  // monster.svg, axe.svg [weapon], chalice.svg [relic]).
+  // ============================================================================
   monster: _normalizeIcon({
     label: 'Monstre',
     draw: function (ctx, cx, cy, r) {
@@ -188,6 +204,73 @@ const CATEGORY_ICONS = {
       ctx.restore();
     }
   }, 0.6),
+  weapon: _normalizeIcon({
+    label: 'Arme',
+    draw: function (ctx, cx, cy, r) {
+      // Source : documentation/axe.svg (hache, viewBox 0 0 16 16)
+      var S = 0.0627;
+      var CX = 8.0215, CY = 7.9786;
+      var P = [[['M',1,7.5],['C',1,3.3579,4.3579,0,8.5,0],['L',8.5,5],['L',9.0429,5.5429],['L',11.293,3.2929],['L',12.7072,4.7071],['L',10.4571,6.9571],['L',11,7.5],['L',16,7.5],['C',16,11.6422,12.6421,15,8.5,15],['L',8.5,10],['L',7.9571,9.4571],['L',1.4572,15.9571],['L',0.043,14.5429],['L',6.5429,8.0429],['L',6,7.5],['L',1,7.5],['Z']]];
+      function fillPaths(list, color) {
+        for (var i = 0; i < list.length; i++) {
+          ctx.beginPath();
+          var a = list[i];
+          for (var j = 0; j < a.length; j++) {
+            var s = a[j];
+            if (s[0] === 'M') ctx.moveTo(s[1], s[2]);
+            else if (s[0] === 'L') ctx.lineTo(s[1], s[2]);
+            else if (s[0] === 'C') ctx.bezierCurveTo(s[1], s[2], s[3], s[4], s[5], s[6]);
+            else if (s[0] === 'Z') ctx.closePath();
+          }
+          ctx.fillStyle = color;
+          ctx.fill();
+        }
+      }
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(r * S, r * S);
+      ctx.translate(-CX, -CY);
+      fillPaths(P, COLORS.parchment);
+      ctx.restore();
+    }
+  }, 0.6),
+  relic: _normalizeIcon({
+    label: 'Relique',
+    draw: function (ctx, cx, cy, r) {
+      // Source : documentation/chalice.svg (calice, viewBox 0 0 495.047 495.047)
+      var S = 0.00202;
+      var CX = 247.524, CY = 247.5235;
+      var P = [
+        [['M',450.834,69.286],['C',441.903,58.12,428.578,51.712,414.289,51.712],['L',411.532,51.712],['C',412.038,46.819,412.384,41.992,412.694,37.18],['L',419.119,37.18],['C',429.394,37.18,437.71,28.855,437.71,18.59],['C',437.71,8.323,429.395,0,419.12,0],['L',75.928,0],['C',65.651,0,57.337,8.323,57.337,18.59],['C',57.337,28.856,65.651,37.18,75.928,37.18],['L',82.335,37.18],['C',82.645,41.992,82.988,46.819,83.497,51.712],['L',80.754,51.712],['C',66.47,51.712,53.144,58.12,44.21,69.304],['C',35.295,80.469,31.993,94.866,35.133,108.817],['L',54.722,195.27],['C',62.983,231.679,94.808,257.103,132.133,257.103],['L',155.281,257.103],['C',161.98,266.617,169.004,275.349,176.338,283.02],['C',207.983,316.107,223.05,361.91,217.134,407.314],['L',213.793,432.912],['C',195.291,442.989,181.695,460.933,177.809,482.365],['C',177.246,485.507,178.118,488.737,180.17,491.178],['C',182.202,493.63,185.234,495.047,188.412,495.047],['L',306.634,495.047],['C',309.811,495.047,312.844,493.64,314.895,491.188],['C',316.946,488.737,317.799,485.507,317.237,482.366],['C',313.352,460.916,299.735,442.962,281.198,432.895],['L',277.876,407.333],['C',271.96,361.856,286.992,316.152,318.689,283.02],['C',326.026,275.35,333.049,266.618,339.75,257.103],['L',362.915,257.103],['C',400.241,257.103,432.066,231.679,440.325,195.27],['L',459.913,108.808],['C',463.055,94.866,459.749,80.469,450.834,69.286],['Z']],
+        [['M',132.133,219.922],['C',112.29,219.922,95.368,206.408,90.994,187.046],['L',71.406,100.604],['C',70.752,97.745,71.441,94.785,73.258,92.505],['C',75.092,90.209,77.814,88.893,80.754,88.893],['L',88.853,88.893],['C',97.313,134.488,112.724,180.8,132.987,219.923],['L',132.133,219.923],['Z']],
+        [['M',404.05,187.046],['C',399.676,206.408,382.756,219.922,362.914,219.922],['L',362.042,219.922],['C',382.302,180.808,397.715,134.487,406.176,88.892],['L',414.289,88.892],['C',417.232,88.892,419.954,90.208,421.788,92.487],['C',423.603,94.783,424.294,97.743,423.641,100.593],['L',404.05,187.046],['Z']]
+      ];
+      function fillPaths(list, color) {
+        for (var i = 0; i < list.length; i++) {
+          ctx.beginPath();
+          var a = list[i];
+          for (var j = 0; j < a.length; j++) {
+            var s = a[j];
+            if (s[0] === 'M') ctx.moveTo(s[1], s[2]);
+            else if (s[0] === 'L') ctx.lineTo(s[1], s[2]);
+            else if (s[0] === 'C') ctx.bezierCurveTo(s[1], s[2], s[3], s[4], s[5], s[6]);
+            else if (s[0] === 'Z') ctx.closePath();
+          }
+          ctx.fillStyle = color;
+          ctx.fill();
+        }
+      }
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(r * S, r * S);
+      ctx.translate(-CX, -CY);
+      fillPaths(P, COLORS.parchment);
+      ctx.restore();
+    }
+  }, 0.6),
+  // ============================================================================
+  // FIN DU BLOC SVG — la suite reprend des icônes dessinées à la main normalement.
+  // ============================================================================
   animal: _normalizeIcon({
     label: 'Animal',
     draw(ctx, cx, cy, r) {
@@ -226,39 +309,6 @@ const CATEGORY_ICONS = {
       ctx.lineTo(cx - r * 0.35, cy + r * 0.35);
       ctx.lineTo(cx - r * 0.05, cy - r * 0.1);
       ctx.closePath();
-      ctx.stroke();
-    }
-  }, 0.6),
-  weapon: _normalizeIcon({
-    label: 'Arme',
-    draw(ctx, cx, cy, r) {
-      ctx.beginPath();
-      ctx.moveTo(cx + r * 0.15, cy - r * 0.65);
-      ctx.lineTo(cx + r * 0.65, cy - r * 0.15);
-      ctx.lineTo(cx + r * 0.15, cy + r * 0.35);
-      ctx.lineTo(cx - r * 0.05, cy + r * 0.15);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cx - r * 0.05, cy + r * 0.05);
-      ctx.lineTo(cx - r * 0.55, cy + r * 0.55);
-      ctx.stroke();
-    }
-  }, 0.6),
-  relic: _normalizeIcon({
-    label: 'Relique',
-    draw(ctx, cx, cy, r) {
-      ctx.beginPath();
-      ctx.moveTo(cx - r * 0.3, cy - r * 0.6);
-      ctx.lineTo(cx + r * 0.3, cy - r * 0.6);
-      ctx.lineTo(cx + r * 0.4, cy - r * 0.35);
-      ctx.lineTo(cx - r * 0.4, cy - r * 0.35);
-      ctx.closePath();
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cx - r * 0.35, cy - r * 0.3);
-      ctx.bezierCurveTo(cx - r * 0.35, cy + r * 0.5, cx - r * 0.1, cy + r * 0.65, cx, cy + r * 0.65);
-      ctx.bezierCurveTo(cx + r * 0.1, cy + r * 0.65, cx + r * 0.35, cy + r * 0.5, cx + r * 0.35, cy - r * 0.3);
       ctx.stroke();
     }
   }, 0.6),

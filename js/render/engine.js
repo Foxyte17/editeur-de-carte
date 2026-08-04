@@ -20,15 +20,17 @@ function drawOrnaments(ctx) {
     ctx.lineTo(x, CARD_H - 120);
     ctx.stroke();
     ctx.globalAlpha = 0.85;
-    for (let y = 150; y < CARD_H - 120; y += 125) {
-      ctx.beginPath();
-      ctx.moveTo(x, y - 10);
-      ctx.lineTo(x + 6, y);
-      ctx.lineTo(x, y + 10);
-      ctx.lineTo(x - 6, y);
-      ctx.closePath();
-      ctx.fillStyle = COLORS.brass;
-      ctx.fill();
+    for (let y = 150; y < HALF_H; y += 125) {
+      [y, CARD_H - y].forEach(yy => {
+        ctx.beginPath();
+        ctx.moveTo(x, yy - 10);
+        ctx.lineTo(x + 6, yy);
+        ctx.lineTo(x, yy + 10);
+        ctx.lineTo(x - 6, yy);
+        ctx.closePath();
+        ctx.fillStyle = COLORS.brass;
+        ctx.fill();
+      });
     }
   });
   ctx.globalAlpha = 1;
@@ -149,16 +151,32 @@ function drawFaceContent(ctx, face) {
   ctx.fillRect(0, 0, CARD_W, HALF_H);
 
 
-
-  const bannerH = 50;
+  // Bandeau titre : longueur adaptée au nombre de caractères du titre (4 paliers)
   const bannerY0 = 35;
-  
-  // Bandeau titre — du bord gauche jusqu'avant le badge catégorie
   const bannerX0 = 38;
-  const bannerX1 = 530;
+
+  // Longueur (bord droit) selon le nombre de caractères : >=30 -> 530, >=20 -> 410, >=15 -> 380, >=5 -> 250, sinon -> 220
+  const title = (face.name || 'Titre').trim();
+  const bannerX1 = title.length >= 30 ? 530 : title.length >= 20 ? 410 : title.length >= 15 ? 380 : title.length >= 5 ? 250 : 220;
   const bannerW = bannerX1 - bannerX0;
-  
-  
+  const bannerH = 50;
+  const cut = 9;
+
+  // Bord gauche du texte : bord droit du badge type (58 + 43 + 3) + marge 12 = 116 (ajuster si le badge bouge)
+  const titleLeft = 120;
+  const titleMaxW = bannerX1 - 12 - titleLeft;
+
+  // 1-3 lettres : titre centré entre le badge et le bord droit du bandeau ; à partir de 4 : logique des paliers (aligné à gauche)
+  const centerTitle = title.length <= 3;
+
+  // Taille du titre ajustée à la largeur disponible (comportement d'origine)
+  let fontSize = 26;
+  ctx.font = `700 ${fontSize}px "Iowan Old Style", "Palatino Linotype", Georgia, serif`;
+  while (ctx.measureText(title).width > titleMaxW && fontSize > 11) {
+    fontSize -= 1;
+    ctx.font = `700 ${fontSize}px "Iowan Old Style", "Palatino Linotype", Georgia, serif`;
+  }
+
   ctx.save();
   // Couleur Fond bandeau titre
   ctx.fillStyle = 'rgba(20,24,31,1)';
@@ -166,7 +184,6 @@ function drawFaceContent(ctx, face) {
   ctx.strokeStyle = COLORS.brass;
   ctx.lineWidth = 1.5;
   ctx.strokeRect(bannerX0, bannerY0, bannerW, bannerH);
-  const cut = 9;
   ctx.strokeStyle = COLORS.brassBright;
   ctx.lineWidth = 1.5;
   [[bannerX0, bannerY0, 1, 1], [bannerX1, bannerY0, -1, 1], [bannerX0, bannerY0 + bannerH, 1, -1], [bannerX1, bannerY0 + bannerH, -1, -1]].forEach(([x, y, sx, sy]) => {
@@ -176,16 +193,9 @@ function drawFaceContent(ctx, face) {
     ctx.lineTo(x, y + cut * sy);
     ctx.stroke();
   });
-  let fontSize = 26;
-  const title = (face.name || 'Sans titre').toUpperCase();
-  ctx.font = `700 ${fontSize}px "Iowan Old Style", "Palatino Linotype", Georgia, serif`;
-  while (ctx.measureText(title).width > bannerW - 24 && fontSize > 11) {
-    fontSize -= 1;
-    ctx.font = `700 ${fontSize}px "Iowan Old Style", "Palatino Linotype", Georgia, serif`;
-  }
   let displayTitle = title;
-  if (ctx.measureText(displayTitle).width > bannerW - 24) {
-    while (displayTitle.length > 1 && ctx.measureText(displayTitle + '…').width > bannerW - 24) {
+  if (ctx.measureText(displayTitle).width > titleMaxW) {
+    while (displayTitle.length > 1 && ctx.measureText(displayTitle + '…').width > titleMaxW) {
       displayTitle = displayTitle.slice(0, -1);
     }
     displayTitle += '…';
@@ -195,9 +205,10 @@ function drawFaceContent(ctx, face) {
   ctx.rect(bannerX0, bannerY0, bannerW, bannerH);
   ctx.clip();
   ctx.fillStyle = COLORS.brassBright;
-  ctx.textAlign = 'center';
+  ctx.textAlign = centerTitle ? 'center' : 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText(displayTitle, bannerX0 + bannerW / 2, bannerY0 + bannerH / 2 + 1);
+  const titleX = centerTitle ? (titleLeft + bannerX1 - 12) / 2 : titleLeft;
+  ctx.fillText(displayTitle, titleX, bannerY0 + bannerH / 2 + 1);
   ctx.restore();
   ctx.restore();
 
@@ -276,9 +287,9 @@ function drawBadgeContent(ctx, face) {
   // =========== BADGE CATEGORIE (DROITE)===============
   // CatBadgeCX : horizontal === CatBadgeCY : vertical === CatBadgeRadius : taille
   // L'asymétrie entre ce badge et le badge type est voulue.
-  const CatBadgeCX = 590;
-  const CatBadgeCY = 65;
-  const CatBadgeRadius = 30;
+  const CatBadgeCX = 80;
+  const CatBadgeCY = 150  ;
+  const CatBadgeRadius = 35;
 
   ctx.save();
   ctx.shadowColor = 'rgba(0,0,0,0.65)';
