@@ -34,7 +34,7 @@ function _measureIcon(iconDef, r) {
   const rec = {
     save() { stack.push({ tx, ty, sx, sy }); },
     restore() { const s = stack.pop(); if (s) { tx = s.tx; ty = s.ty; sx = s.sx; sy = s.sy; } },
-    translate(x, y) { tx += x; ty += y; },
+    translate(x, y) { tx += x * sx; ty += y * sy; },
     scale(x, y) { sx *= x; sy *= y; },
     beginPath() { current = []; },
     moveTo(x, y) { if (current) current.push(['M', x, y]); },
@@ -57,26 +57,72 @@ function _normalizeIcon(iconDef, targetHalf) {
   const extent = Math.max(bb.maxX - bb.minX, bb.maxY - bb.minY) / 2;
   if (!(extent > 0)) return iconDef;
   const scale = targetHalf / extent;
+  // Recentrage automatique : certaines icônes ne sont pas dessinées symétriquement
+  // autour de leur propre origine (ex. la patte animal). Sans ce recentrage, seul
+  // le redimensionnement était appliqué et l'icône pouvait apparaître décalée dans
+  // le badge. Les icônes déjà centrées ne sont pas affectées (offset proche de 0).
+  const offsetX = (bb.minX + bb.maxX) / 2;
+  const offsetY = (bb.minY + bb.maxY) / 2;
   return {
     label: iconDef.label,
     draw(ctx, cx, cy, r) {
       ctx.save();
       ctx.translate(cx, cy);
       ctx.scale(scale, scale);
+      ctx.translate(-offsetX, -offsetY);
       iconDef.draw(ctx, 0, 0, r);
       ctx.restore();
     }
   };
 }
-
-const TYPE_ICONS = {
-  event: _normalizeIcon({
-    label: 'Événement',
-    draw(ctx, cx, cy, r) {
       // Chaque icône a un bloc qui se termine par }, <un nombre>), - c'est toujours ce nombre-là qui contrôle sa taille.
       // Épaisseur et taille du "!" pilotées ici : lineWidth propre (au lieu d'hériter
       // du lineWidth fixe posé par le badge) + facteur de normalisation dédié (0.68
       // au lieu de 0.6 partagé) pour que le symbole occupe davantage le badge.
+const TYPE_ICONS = {
+  event: _normalizeIcon({
+    label: 'Événement',
+    draw(ctx, cx, cy, r) {
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = r * 0.09;
+      const outerR = [0.62, 0.7, 0.58, 0.72, 0.6, 0.68, 0.56, 0.74];
+      const innerR = 0.26;
+      const n = outerR.length;
+      ctx.beginPath();
+      for (let i = 0; i < n; i++) {
+        const aOuter = (i / n) * Math.PI * 2 - Math.PI / 2;
+        const aInner = ((i + 0.5) / n) * Math.PI * 2 - Math.PI / 2;
+        const ox = cx + Math.cos(aOuter) * outerR[i] * r;
+        const oy = cy + Math.sin(aOuter) * outerR[i] * r;
+        const ix = cx + Math.cos(aInner) * innerR * r;
+        const iy = cy + Math.sin(aInner) * innerR * r;
+        if (i === 0) ctx.moveTo(ox, oy); else ctx.lineTo(ox, oy);
+        ctx.lineTo(ix, iy);
+      }
+      ctx.closePath();
+      ctx.stroke();
+    }
+  }, 0.90),
+
+  quest: _normalizeIcon({
+    label: 'Quête',
+    draw(ctx, cx, cy, r) {
+      ctx.beginPath();
+      ctx.arc(cx, cy - r * 0.25, r * 0.35, Math.PI * 1.1, Math.PI * 2.5);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(cx, cy + r * 0.1);
+      ctx.lineTo(cx, cy + r * 0.32);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(cx, cy + r * 0.55, r * 0.09, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }, 0.80),
+
+  danger: _normalizeIcon({
+    label: 'Danger',
+    draw(ctx, cx, cy, r) {
       ctx.lineCap = 'round';
       ctx.lineWidth = r * 0.17;
       ctx.beginPath();
@@ -88,51 +134,7 @@ const TYPE_ICONS = {
       ctx.fill();
     }
   }, 0.90),
-  quest: _normalizeIcon({
-    label: 'Quête',
-    draw(ctx, cx, cy, r) {
-      ctx.beginPath();
-      ctx.arc(cx, cy - r * 0.25, r * 0.35, Math.PI * 1.1, Math.PI * 2.6);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - r * 0.02);
-      ctx.lineTo(cx, cy + r * 0.2);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, cy + r * 0.55, r * 0.09, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }, 0.90),
-  danger: _normalizeIcon({
-    label: 'Danger',
-    draw(ctx, cx, cy, r) {
-      // Logo biohazard : 3 bras à 120° + pastilles aux extrémités + « ! » central
-      ctx.lineCap = 'round';
-      ctx.lineJoin = 'round';
-      ctx.lineWidth = r * 0.11;
-      const armR = r * 0.52;
-      for (let i = 0; i < 3; i++) {
-        const a = -Math.PI / 2 + i * (Math.PI * 2 / 3);
-        ctx.beginPath();
-        ctx.arc(cx, cy, armR, a - Math.PI * 0.33, a + Math.PI * 0.33);
-        ctx.stroke();
-      }
-      for (let i = 0; i < 3; i++) {
-        const a = -Math.PI / 2 + i * (Math.PI * 2 / 3);
-        ctx.beginPath();
-        ctx.arc(cx + Math.cos(a) * armR, cy + Math.sin(a) * armR, r * 0.13, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-      ctx.lineWidth = r * 0.13;
-      ctx.beginPath();
-      ctx.moveTo(cx, cy - r * 0.22);
-      ctx.lineTo(cx, cy + r * 0.04);
-      ctx.stroke();
-      ctx.beginPath();
-      ctx.arc(cx, cy + r * 0.15, r * 0.07, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  }, 0.90),
+
   unexpected: _normalizeIcon({
     label: 'Inattendu',
     draw(ctx, cx, cy, r) {
@@ -271,32 +273,63 @@ const CATEGORY_ICONS = {
   // ============================================================================
   // FIN DU BLOC SVG — la suite reprend des icônes dessinées à la main normalement.
   // ============================================================================
-  animal: _normalizeIcon({
+    animal: _normalizeIcon({
     label: 'Animal',
     draw(ctx, cx, cy, r) {
-      // Forme de patte : coussinet central + trois doigts arrondis
+      // Forme de patte de loup/chien : 4 doigts ovales + coussinet en fer de lance + griffes
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
-      ctx.lineWidth = r * 0.12;
-      const toeR = r * 0.14;
+      ctx.lineWidth = r * 0.1; // Un peu plus fin pour la lisibilité
+
+      // 1. Les 4 coussinets (doigts) - On utilise des cercles mis à l'échelle pour faire des ovales
       const toes = [
-        [-0.32, -0.34],
-        [0, -0.46],
-        [0.32, -0.34]
+        { x: -0.32, y: -0.15, sx: 0.7, sy: 1.0 }, // Doigt gauche
+        { x: -0.11, y: -0.35, sx: 0.7, sy: 1.0 }, // Doigt centre-gauche
+        { x: 0.11,  y: -0.35, sx: 0.7, sy: 1.0 }, // Doigt centre-droit
+        { x: 0.32,  y: -0.15, sx: 0.7, sy: 1.0 }  // Doigt droit
       ];
-      for (const [dx, dy] of toes) {
+      const toeR = r * 0.12;
+
+      for (const t of toes) {
+        ctx.save();
+        ctx.translate(cx + t.x * r, cy + t.y * r);
+        ctx.scale(t.sx, t.sy); // Voici l'astuce pour faire des ovales !
         ctx.beginPath();
-        ctx.arc(cx + dx * r, cy + dy * r, toeR, 0, Math.PI * 2);
-        ctx.stroke();
+        ctx.arc(0, 0, toeR, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
       }
+
+      // 2. Le coussinet principal (paume) - Forme en fer de lance
       ctx.beginPath();
-      ctx.moveTo(cx - r * 0.5, cy - r * 0.05);
-      ctx.bezierCurveTo(cx - r * 0.5, cy + r * 0.5, cx + r * 0.5, cy + r * 0.5, cx + r * 0.5, cy - r * 0.05);
-      ctx.bezierCurveTo(cx + r * 0.5, cy - r * 0.22, cx + r * 0.22, cy - r * 0.24, cx, cy - r * 0.24);
-      ctx.bezierCurveTo(cx - r * 0.22, cy - r * 0.24, cx - r * 0.5, cy - r * 0.22, cx - r * 0.5, cy - r * 0.05);
-      ctx.stroke();
+      ctx.moveTo(cx - r * 0.32, cy + r * 0.15); // Base gauche
+      // Courbe bas-gauche vers le centre
+      ctx.bezierCurveTo(cx - r * 0.32, cy + r * 0.45, cx, cy + r * 0.55, cx, cy + r * 0.30);
+      // Courbe bas-droite
+      ctx.bezierCurveTo(cx, cy + r * 0.55, cx + r * 0.32, cy + r * 0.45, cx + r * 0.32, cy + r * 0.15);
+      ctx.lineTo(cx + r * 0.20, cy - r * 0.05); // Montée droite
+      // Plafond en V (le haut du fer de lance)
+      ctx.bezierCurveTo(cx + r * 0.10, cy - r * 0.15, cx - r * 0.10, cy - r * 0.15, cx - r * 0.20, cy - r * 0.05);
+      ctx.closePath();
+      ctx.fill();
+
+      // 3. Les griffes (petits triangles au-dessus des doigts)
+      const claws = [
+        { x: -0.32, y: -0.30 },
+        { x: -0.11, y: -0.50 },
+        { x: 0.11,  y: -0.50 },
+        { x: 0.32,  y: -0.30 }
+      ];
+      
+      ctx.beginPath();
+      for (const c of claws) {
+        ctx.moveTo(cx + (c.x - 0.04) * r, cy + (c.y + 0.04) * r);
+        ctx.lineTo(cx + c.x * r, cy + (c.y - 0.07) * r);
+        ctx.lineTo(cx + (c.x + 0.04) * r, cy + (c.y + 0.04) * r);
+      }
+      ctx.fill();
     }
-  }, 0.6),
+  }, 0.9),
   object: _normalizeIcon({
     label: 'Objet',
     draw(ctx, cx, cy, r) {

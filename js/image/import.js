@@ -97,6 +97,8 @@ function compressAndStore(face, img, mime) {
   face.crop = { zoom: 100, x: null, y: null };
   delete face._imgCache;
   document.getElementById('image-error').textContent = '';
-  loadFaceIntoForm();
-  showStatus('Image importée — tu peux la recadrer et régler les filtres.');
+  preloadFaceImage(face, () => {
+    loadFaceIntoForm();
+    showStatus('Image importée — tu peux la recadrer et régler les filtres.');
+  });
 }

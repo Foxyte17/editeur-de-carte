@@ -20,6 +20,11 @@ function getCropGeometry(face, boxW, boxH) {
 function renderCropBox() {
   const face = activeFace();
   if (!face || !face.imageRaw) return;
+  preloadFaceImage(face, doRenderCropBox);
+}
+
+function doRenderCropBox(face) {
+  if (!face || !face.imageNatural) return;
   const box = document.getElementById('crop-box');
   const canvas = document.getElementById('crop-canvas');
   const boxW = box.clientWidth || 260;
@@ -28,20 +33,22 @@ function renderCropBox() {
   canvas.height = boxH;
   const ctx = canvas.getContext('2d');
 
-  const geo = getCropGeometry(face, boxW, boxH);
-  const img = new Image();
-  img.onload = () => {
+  const geo = getCropGeometry(face, CARD_W, HALF_H);
+  const ratio = boxW / CARD_W;
+
+  const img = face._imgCache;
+  if (img && img.complete) {
     ctx.clearRect(0, 0, boxW, boxH);
     ctx.filter = `brightness(${face.filters.brightness}%) contrast(${face.filters.contrast}%) saturate(${face.filters.saturation}%)`;
-    ctx.drawImage(img, geo.x, geo.y, geo.drawW, geo.drawH);
+    ctx.drawImage(img, geo.x * ratio, geo.y * ratio, geo.drawW * ratio, geo.drawH * ratio);
     ctx.filter = 'none';
-  };
-  img.src = face.imageRaw;
+  }
 
   setupCropDrag(box, boxW, boxH);
 }
 
 function setupCropDrag(box, boxW, boxH) {
+  const ratio = boxW / CARD_W;
   box.onpointerdown = e => {
     const face = activeFace();
     if (!face) return;
@@ -51,8 +58,10 @@ function setupCropDrag(box, boxW, boxH) {
   box.onpointermove = e => {
     if (!dragState) return;
     const face = activeFace();
-    face.crop.x = dragState.origX + (e.clientX - dragState.startX);
-    face.crop.y = dragState.origY + (e.clientY - dragState.startY);
+    const dx = (e.clientX - dragState.startX) / ratio;
+    const dy = (e.clientY - dragState.startY) / ratio;
+    face.crop.x = dragState.origX + dx;
+    face.crop.y = dragState.origY + dy;
     renderCropBox();
     renderPreview();
   };

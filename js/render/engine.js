@@ -315,18 +315,6 @@ function drawBadgeContent(ctx, face) {
 
 
 
-function preloadFaceImage(face, then) {
-  if (!face.imageRaw) { then(); return; }
-  if (face._imgCache && face._imgCache.src === face.imageRaw && face._imgCache.complete) { then(); return; }
-  const img = new Image();
-  img.onload = () => { face._imgCache = img; then(); };
-  img.onerror = () => {
-    showStatus('Une image de carte est illisible — elle a été ignorée dans le rendu.');
-    then();
-  };
-  img.src = face.imageRaw;
-}
-
 function drawHalf(ctx, face) {
   drawFaceContent(ctx, face);
 }

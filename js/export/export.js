@@ -99,6 +99,7 @@ function saveProjectJson() {
   }
   const payload = {
     format: 'ORACLE_CARD_EDITOR_PROJECT',
+    cropSpace: 'card',
     deckName: deck.name,
     cards: deck.cards.map(card => ({
       id: card.id,
@@ -132,11 +133,16 @@ function loadProjectJson(event) {
       }
 
       const deck = newDeck(data.deckName || 'Deck importé');
+      const isCardSpace = data.cropSpace === 'card';
       (data.cards || []).forEach(c => {
         const card = newCard();
         card.id = c.id || card.id;
         card.top = normalizeFace(Object.assign(newFace(), c.top || {}));
         card.bottom = normalizeFace(Object.assign(newFace(), c.bottom || {}));
+        if (!isCardSpace) {
+          card.top.crop = { zoom: 100, x: null, y: null };
+          card.bottom.crop = { zoom: 100, x: null, y: null };
+        }
         deck.cards.push(card);
       });
       decks.push(deck);

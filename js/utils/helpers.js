@@ -2,6 +2,18 @@ function activeDeck() { return decks.find(d => d.id === activeDeckId); }
 function activeCard() { const deck = activeDeck(); return deck ? deck.cards.find(c => c.id === activeCardId) : null; }
 function activeFace() { const card = activeCard(); return card ? card[activeFaceKey] : null; }
 
+function preloadFaceImage(face, then) {
+  if (!face.imageRaw) { then(face); return; }
+  if (face._imgCache && face._imgCache.src === face.imageRaw && face._imgCache.complete) { then(face); return; }
+  const img = new Image();
+  img.onload = () => { face._imgCache = img; then(face); };
+  img.onerror = () => {
+    showStatus('Une image de carte est illisible — elle a été ignorée dans le rendu.');
+    then(face);
+  };
+  img.src = face.imageRaw;
+}
+
 function showStatus(msg) {
   document.getElementById('status-msg').textContent = msg;
   clearTimeout(showStatus._t);
