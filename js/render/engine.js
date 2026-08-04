@@ -307,6 +307,8 @@ function drawBadgeContent(ctx, face) {
   ctx.strokeStyle = COLORS.parchment;
   ctx.fillStyle = COLORS.parchment;
   ctx.lineWidth = 3;
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = 'transparent'
   const catIcon = CATEGORY_ICONS[face.categoryIcon] || CATEGORY_ICONS.npc;
   catIcon.draw(ctx, CatBadgeCX, CatBadgeCY, CatBadgeRadius * 0.65);
   ctx.restore();

@@ -205,7 +205,7 @@ const CATEGORY_ICONS = {
       fillPaths(H, COLORS.ink);
       ctx.restore();
     }
-  }, 0.6),
+  }, 0.8),
   weapon: _normalizeIcon({
     label: 'Arme',
     draw: function (ctx, cx, cy, r) {
@@ -235,7 +235,7 @@ const CATEGORY_ICONS = {
       fillPaths(P, COLORS.parchment);
       ctx.restore();
     }
-  }, 0.6),
+  }, 0.65),
   relic: _normalizeIcon({
     label: 'Relique',
     draw: function (ctx, cx, cy, r) {
@@ -330,11 +330,11 @@ const CATEGORY_ICONS = {
       ctx.fill();
     }
   }, 0.9),
-  object: _normalizeIcon({
-    label: 'Objet',
+  location: _normalizeIcon({
+    label: 'Lieu',
     draw(ctx, cx, cy, r) {
       ctx.beginPath();
-      ctx.arc(cx, cy, r * 0.65, 0, Math.PI * 2);
+      ctx.arc(cx, cy, r * 0.50, 0, Math.PI * 2);
       ctx.stroke();
       ctx.beginPath();
       ctx.moveTo(cx + r * 0.35, cy - r * 0.35);
@@ -344,30 +344,58 @@ const CATEGORY_ICONS = {
       ctx.closePath();
       ctx.stroke();
     }
-  }, 0.6),
-  environment: _normalizeIcon({
+  }, 0.50),
+    environment: _normalizeIcon({
     label: 'Environnement',
     draw(ctx, cx, cy, r) {
-      // Forme de montagne : double pic asymétrique (pic droit nettement plus haut)
-      ctx.lineJoin = 'round';
+      // Sapin à 3 étages de feuillage + tronc, en traits fins (style "environment").
+      ctx.lineJoin = 'miter';
+      ctx.lineWidth = r * 0.09;   // <-- ÉPAISSEUR DU TRAIT : change ce 0.09 (plus petit = plus fin)
+
+      // --- Étage 1 (sommet) ---
       ctx.beginPath();
-      ctx.moveTo(cx - r * 0.55, cy + r * 0.42);
-      ctx.lineTo(cx - r * 0.15, cy - r * 0.15);
-      ctx.lineTo(cx + r * 0.02, cy - r * 0.02);
-      ctx.lineTo(cx + r * 0.3, cy - r * 0.55);
-      ctx.lineTo(cx + r * 0.55, cy + r * 0.42);
+      ctx.moveTo(cx, cy - r * 0.62);
+      ctx.lineTo(cx - r * 0.13, cy - r * 0.38);
+      ctx.lineTo(cx + r * 0.13, cy - r * 0.38);
       ctx.closePath();
+      ctx.fillStyle = COLORS.parchment; ctx.fill();  // <-- décommente ces 2 lignes pour remplir cet étage
+      ctx.stroke();
+
+      // --- Étage 2 (milieu) ---
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r * 0.40);
+      ctx.lineTo(cx - r * 0.23, cy - r * 0.12);
+      ctx.lineTo(cx + r * 0.23, cy - r * 0.12);
+      ctx.closePath();
+      ctx.fillStyle = COLORS.parchment; ctx.fill();  // <-- idem pour cet étage
+      ctx.stroke();
+
+      // --- Étage 3 (base) ---
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - r * 0.14);
+      ctx.lineTo(cx - r * 0.35, cy + r * 0.16);
+      ctx.lineTo(cx + r * 0.35, cy + r * 0.16);
+      ctx.closePath();
+      ctx.fillStyle = COLORS.parchment; ctx.fill();  // <-- idem pour cet étage
+      ctx.stroke();
+
+      // --- Tronc ---
+      ctx.beginPath();
+      ctx.moveTo(cx - r * 0.06, cy + r * 0.16);
+      ctx.lineTo(cx - r * 0.06, cy + r * 0.46);
+      ctx.lineTo(cx + r * 0.06, cy + r * 0.46);
+      ctx.lineTo(cx + r * 0.06, cy + r * 0.16);
       ctx.stroke();
     }
-  }, 0.6)
-};
+  }, 0.7)
+}
 
 // Migration : anciennes clés françaises (fichiers de projet sauvegardés avant le passage en anglais) -> clés actuelles.
 const CATEGORY_ICON_ALIASES = {
   pnj: 'npc',
   monstre: 'monster',
   animal: 'animal',
-  objet: 'object',
+  lieu: 'location',
   arme: 'weapon',
   relique: 'relic',
   environnement: 'environment'

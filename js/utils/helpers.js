@@ -27,19 +27,23 @@ function escapeHtml(text) {
 }
 
 function wrapText(ctx, text, maxWidth) {
-  const words = text.split(/\s+/).filter(Boolean);
+  const paragraphs = text.split('\n');
   const lines = [];
-  let current = '';
-  words.forEach(word => {
-    const test = current ? current + ' ' + word : word;
-    if (ctx.measureText(test).width > maxWidth && current) {
-      lines.push(current);
-      current = word;
-    } else {
-      current = test;
-    }
+  paragraphs.forEach(paragraph => {
+    const words = paragraph.split(/\s+/).filter(Boolean);
+    if (words.length === 0) { lines.push(''); return; }
+    let current = '';
+    words.forEach(word => {
+      const test = current ? current + ' ' + word : word;
+      if (ctx.measureText(test).width > maxWidth && current) {
+        lines.push(current);
+        current = word;
+      } else {
+        current = test;
+      }
+    });
+    if (current) lines.push(current);
   });
-  if (current) lines.push(current);
   return lines;
 }
 
