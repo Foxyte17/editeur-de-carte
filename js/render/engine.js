@@ -360,7 +360,7 @@ function renderPreview() {
     ctx.fillStyle = COLORS.ink;
     ctx.fillRect(0, 0, CARD_W, CARD_H);
     ctx.fillStyle = COLORS.parchmentDim;
-    ctx.font = '20px Georgia, serif';
+    ctx.font = '40px Georgia, serif';
     ctx.textAlign = 'center';
     ctx.fillText('Sélectionne ou crée une carte', CARD_W / 2, CARD_H / 2);
     return;
@@ -373,28 +373,20 @@ function renderPreview() {
 }
 
 function resetPreviewFlip() {
-  previewFlipped = false;
-  const canvas = document.getElementById('preview-canvas');
-  if (canvas) canvas.classList.remove('flipped');
-  const btn = document.getElementById('btn-flip-preview');
-  if (btn) btn.classList.remove('active');
+  setActiveFace('top');
 }
 
 function togglePreviewFlip() {
-  previewFlipped = !previewFlipped;
-  document.getElementById('preview-canvas').classList.toggle('flipped', previewFlipped);
-  const btn = document.getElementById('btn-flip-preview');
-  if (btn) btn.classList.toggle('active', previewFlipped);
+  setActiveFace(previewFlipped ? 'top' : 'bottom');
 }
 
 function setPreviewZoom(value) {
-  previewZoom = Math.min(120, Math.max(25, Number(value)));
+  const shown = Math.min(100, Math.max(25, Math.round(Number(value) || 50)));
+  previewZoom = Math.round(25 + (shown - 25) * 0.6);
   const canvas = document.getElementById('preview-canvas');
   if (canvas) canvas.style.zoom = previewZoom / 100;
-  const col = document.querySelector('.preview-col');
-  if (col) col.classList.toggle('zoomed', previewZoom > 100);
   const label = document.getElementById('preview-zoom-value');
-  if (label) label.textContent = previewZoom + '%';
+  if (label) label.textContent = shown + '%';
 }
 
 function resetPreviewZoom() {

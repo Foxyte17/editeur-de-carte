@@ -35,14 +35,55 @@ function doRenderCropBox(face) {
 
   const geo = getCropGeometry(face, CARD_W, HALF_H);
   const ratio = boxW / CARD_W;
+  const m = 28, r = 12;
 
   const img = face._imgCache;
+
+  // Fond = encre de la carte
+  ctx.fillStyle = COLORS.ink;
+  ctx.fillRect(0, 0, boxW, boxH);
+
+  // Même clip que l'aperçu (marges du cadre doré) pour un rendu synchronisé
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo((m + r) * ratio, m * ratio);
+  ctx.lineTo((CARD_W - m - r) * ratio, m * ratio);
+  ctx.arcTo((CARD_W - m) * ratio, m * ratio, (CARD_W - m) * ratio, (m + r) * ratio, r * ratio);
+  ctx.lineTo((CARD_W - m) * ratio, HALF_H * ratio);
+  ctx.lineTo(m * ratio, HALF_H * ratio);
+  ctx.lineTo(m * ratio, (m + r) * ratio);
+  ctx.arcTo(m * ratio, m * ratio, (m + r) * ratio, m * ratio, r * ratio);
+  ctx.closePath();
+  ctx.clip();
+
   if (img && img.complete) {
-    ctx.clearRect(0, 0, boxW, boxH);
     ctx.filter = `brightness(${face.filters.brightness}%) contrast(${face.filters.contrast}%) saturate(${face.filters.saturation}%)`;
-    ctx.drawImage(img, geo.x * ratio, geo.y * ratio, geo.drawW * ratio, geo.drawH * ratio);
+    if (face.flipH || face.flipV) {
+      ctx.save();
+      if (face.flipH) { ctx.translate(boxW, 0); ctx.scale(-1, 1); }
+      if (face.flipV) { ctx.translate(0, boxH); ctx.scale(1, -1); }
+      ctx.drawImage(img, geo.x * ratio, geo.y * ratio, geo.drawW * ratio, geo.drawH * ratio);
+      ctx.restore();
+    } else {
+      ctx.drawImage(img, geo.x * ratio, geo.y * ratio, geo.drawW * ratio, geo.drawH * ratio);
+    }
     ctx.filter = 'none';
   }
+  ctx.restore();
+
+  // Cadre doré
+  ctx.strokeStyle = COLORS.brass;
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo((m + r) * ratio, m * ratio);
+  ctx.lineTo((CARD_W - m - r) * ratio, m * ratio);
+  ctx.arcTo((CARD_W - m) * ratio, m * ratio, (CARD_W - m) * ratio, (m + r) * ratio, r * ratio);
+  ctx.lineTo((CARD_W - m) * ratio, HALF_H * ratio);
+  ctx.lineTo(m * ratio, HALF_H * ratio);
+  ctx.lineTo(m * ratio, (m + r) * ratio);
+  ctx.arcTo(m * ratio, m * ratio, (m + r) * ratio, m * ratio, r * ratio);
+  ctx.closePath();
+  ctx.stroke();
 
   setupCropDrag(box, boxW, boxH);
 }

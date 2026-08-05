@@ -55,75 +55,124 @@
     <button class="btn ghost small" style="width:100%; margin-top:6px;" onclick="addNewCard()">+ Nouvelle carte</button>
   </div>
 
-  <!-- ============ PANNEAU CENTRE : APERÇU ============ -->
-  <div class="panel">
-    <div class="preview-wrap">
-      <div class="zoom-rail">
-        <button class="zoom-reset" title="Remettre le zoom à 100%" aria-label="Remettre le zoom à 100%" onclick="resetPreviewZoom()">↺</button>
-        <input type="range" id="preview-zoom-range" min="25" max="120" value="100" oninput="setPreviewZoom(this.value)">
-        <span id="preview-zoom-value">100%</span>
-        <button id="btn-flip-preview" class="btn ghost small" onclick="togglePreviewFlip()">↻ Pivoter</button>
+  <!-- ============ ZONE DE TRAVAIL : APERÇU + ÉDITION ============ -->
+  <div class="workspace">
+
+    <!-- ============ APERÇU ============ -->
+    <div class="panel preview-panel">
+      <div class="preview-wrap">
+        <div class="zoom-rail">
+          <button class="zoom-reset" title="Remettre le zoom à 100%" aria-label="Remettre le zoom à 100%" onclick="resetPreviewZoom()">↺</button>
+          <input type="range" id="preview-zoom-range" min="25" max="100" value="100" oninput="setPreviewZoom(this.value)">
+          <span id="preview-zoom-value">100%</span>
+          <button id="btn-flip-preview" class="btn ghost small" onclick="togglePreviewFlip()">↻ Bas</button>
+        </div>
+        <div class="preview-col">
+          <canvas id="preview-canvas" width="660" height="1140"></canvas>
+          <div class="status-msg" id="status-msg"></div>
+        </div>
       </div>
-      <div class="preview-col">
-        <canvas id="preview-canvas" width="660" height="1140"></canvas>
-        <div class="status-msg" id="status-msg"></div>
-        <div class="legend">Aperçu zoomable - le zoom est purement visuel, l'export reste en 660 × 1140 px.</div>
+    </div>
+
+    <!-- ============ PANNEAU ÉDITION DE FACE ============ -->
+    <div class="panel edit-panel">
+      <div class="edit-controls">
+        <h2>Caractéristiques de la carte</h2>
+        <div class="field-col">
+          <label>Nom de la carte</label>
+          <input type="text" id="field-name" oninput="updateFaceField('name', this.value)">
+        </div>
+        <div class="field-col">
+          <label>Description</label>
+          <textarea id="field-description" oninput="updateFaceField('description', this.value)"></textarea>
+        </div>
+        <div class="field-col">
+          <label>Position de l'encart</label>
+          <div class="toggle-pair">
+            <button id="pos-left" onclick="updateFaceField('textPosition', 'left')">Gauche</button>
+            <button id="pos-right" onclick="updateFaceField('textPosition', 'right')">Droite</button>
+          </div>
+        </div>
+        <div class="field-col">
+          <label>Illustration</label>
+          <label class="btn ghost small file-btn" for="file-upload">Choisir une image</label>
+          <input type="file" id="file-upload" accept="image/*" onchange="handleImageFile(event)" hidden>
+          <div id="image-error" class="status-msg" style="color:var(--danger);"></div>
+        </div>
+
+        <div class="icon-picker">
+          <div class="icon-slot-wrap">
+            <label>Type</label>
+            <button type="button" class="icon-slot" id="type-icon-slot" onclick="toggleIconTray('type')" title="Choisir l'icône de type">
+              <span class="icon-slot-current" id="type-icon-current"></span>
+              <span class="icon-chev">▾</span>
+            </button>
+          </div>
+          <div class="icon-slot-wrap">
+            <label>Catégorie</label>
+            <button type="button" class="icon-slot" id="category-icon-slot" onclick="toggleIconTray('category')" title="Choisir l'icône de catégorie">
+              <span class="icon-slot-current" id="category-icon-current"></span>
+              <span class="icon-chev">▾</span>
+            </button>
+          </div>
+          <div class="icon-tray" id="type-icon-tray"></div>
+          <div class="icon-tray" id="category-icon-tray"></div>
+        </div>
+
+        <div id="crop-section" style="display:none;">
+          <div class="crop-layout">
+            <div class="crop-left">
+              <label>Cadrage (glisser pour repositionner)</label>
+              <div class="crop-box" id="crop-box">
+                <canvas id="crop-canvas"></canvas>
+              </div>
+              <div class="crop-hint">Glisse l'image pour la repositionner dans le cadre.</div>
+            </div>
+            <div class="crop-right">
+              <label>Réglages</label>
+              <div class="filter-field">
+                <span>Luminosité</span>
+                <div class="slider-row"><span id="lbl-bright">100%</span><input type="range" min="50" max="150" value="100" oninput="updateFilter('brightness', this.value)"></div>
+              </div>
+              <div class="filter-field">
+                <span>Contraste</span>
+                <div class="slider-row"><span id="lbl-contrast">100%</span><input type="range" min="50" max="150" value="100" oninput="updateFilter('contrast', this.value)"></div>
+              </div>
+              <div class="filter-field">
+                <span>Saturation</span>
+                <div class="slider-row"><span id="lbl-sat">100%</span><input type="range" min="0" max="200" value="100" oninput="updateFilter('saturation', this.value)"></div>
+              </div>
+            </div>
+          </div>
+          <div class="crop-tools">
+            <div class="crop-tool">
+              <label>Zoom</label>
+              <input type="range" id="zoom-slider" min="100" max="300" value="100" oninput="updateZoom(this.value)">
+            </div>
+            <div class="crop-tool">
+              <label>Miroir</label>
+              <div class="mirror-pair">
+                <button type="button" class="mirror-check" id="btn-flipH" title="Miroir horizontal" aria-pressed="false" onclick="toggleFlip('flipH')">
+                  <svg class="mirror-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M3 6 L10 12 L3 18 Z" fill="currentColor"/>
+                    <path d="M21 6 L14 12 L21 18 Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                </button>
+                <button type="button" class="mirror-check" id="btn-flipV" title="Miroir vertical" aria-pressed="false" onclick="toggleFlip('flipV')">
+                  <svg class="mirror-icon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+                    <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M6 3 L12 10 L18 3 Z" fill="currentColor"/>
+                    <path d="M6 21 L12 14 L18 21 Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- ============ PANNEAU DROIT : ÉDITION DE FACE ============ -->
-  <div class="panel">
-    <div class="face-tabs">
-      <button class="face-tab active" id="tab-face-top" onclick="setActiveFace('top')">Face du haut</button>
-      <button class="face-tab" id="tab-face-bottom" onclick="setActiveFace('bottom')">Face du bas</button>
-    </div>
-
-    <h2>Texte</h2>
-    <label>Nom de la carte</label>
-    <input type="text" id="field-name" oninput="updateFaceField('name', this.value)">
-    <label>Description</label>
-    <textarea id="field-description" oninput="updateFaceField('description', this.value)"></textarea>
-    <label>Position de l'encart</label>
-    <div class="toggle-pair">
-      <button id="pos-left" onclick="updateFaceField('textPosition', 'left')">Gauche</button>
-      <button id="pos-right" onclick="updateFaceField('textPosition', 'right')">Droite</button>
-    </div>
-
-    <h2>Icône de type</h2>
-    <div class="icon-choice-grid" id="type-icon-grid"></div>
-
-    <h2>Icône de catégorie</h2>
-    <div class="icon-choice-grid" id="category-icon-grid"></div>
-
-    <h2>Illustration</h2>
-    <label>Depuis un fichier</label>
-    <input type="file" accept="image/*" onchange="handleImageFile(event)">
-    <div id="image-error" class="status-msg" style="color:var(--danger);"></div>
-
-    <div id="crop-section" style="display:none;">
-      <label>Cadrage (glisser pour repositionner)</label>
-      <div class="crop-box" id="crop-box">
-        <canvas id="crop-canvas"></canvas>
-      </div>
-      <div class="crop-hint">Glisse l'image pour la repositionner dans le cadre.</div>
-      <label>Zoom</label>
-      <input type="range" id="zoom-slider" min="100" max="300" value="100" oninput="updateZoom(this.value)">
-<label>Miroir</label>
-<div class="toggle-pair">
-  <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--parchment-dim);cursor:pointer;">
-    <input type="checkbox" id="chk-flipH" onchange="updateFaceField('flipH', this.checked)"> Horizontal
-  </label>
-  <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;color:var(--parchment-dim);cursor:pointer;">
-    <input type="checkbox" id="chk-flipV" onchange="updateFaceField('flipV', this.checked)"> Vertical
-  </label>
-</div>
-
-      <label>Réglages</label>
-      <div class="slider-row"><span id="lbl-bright">100%</span><input type="range" min="50" max="150" value="100" oninput="updateFilter('brightness', this.value)"> Luminosité</div>
-      <div class="slider-row"><span id="lbl-contrast">100%</span><input type="range" min="50" max="150" value="100" oninput="updateFilter('contrast', this.value)"> Contraste</div>
-      <div class="slider-row"><span id="lbl-sat">100%</span><input type="range" min="0" max="200" value="100" oninput="updateFilter('saturation', this.value)"> Saturation</div>
-    </div>
   </div>
 
 </div>

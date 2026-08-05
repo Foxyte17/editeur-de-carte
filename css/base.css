@@ -34,10 +34,28 @@ header h1 {
 .toolbar { display: flex; gap: 8px; flex-wrap: wrap; }
 .layout {
   display: grid;
-  grid-template-columns: 280px 1fr 340px;
+  grid-template-columns: 280px 1fr;
   gap: 0;
   min-height: calc(100vh - 58px);
 }
+.workspace {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
+  min-height: calc(100vh - 58px);
+}
+.preview-panel {
+  flex: 0 0 600px;
+  border-right: 1px solid var(--panel-line);
+  overflow-y: auto;
+}
+.edit-panel {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+}
 @media (max-width: 980px) {
   .layout { grid-template-columns: 1fr; }
+  .workspace { flex-direction: column; }
+  .preview-panel { flex-basis: auto; border-right: none; }
 }

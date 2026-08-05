@@ -7,7 +7,7 @@ if (previewWrap) {
     e.preventDefault();
     const slider = document.getElementById('preview-zoom-range');
     const step = 5;
-    const next = previewZoom + (e.deltaY < 0 ? step : -step);
+    const next = (Number(slider.value) || 50) + (e.deltaY < 0 ? step : -step);
     slider.value = next;
     setPreviewZoom(next);
   }, { passive: false });
@@ -16,3 +16,4 @@ if (previewWrap) {
 renderDeckSelect();
 renderCardList();
 setActiveFace('top');
+setPreviewZoom(100);
